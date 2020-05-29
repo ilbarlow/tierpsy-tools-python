@@ -11,6 +11,7 @@ import pandas as pd
 import re
 import datetime
 
+
 def get_digit(string, dtype=float):
     if dtype == int:
         fun = int
@@ -185,7 +186,7 @@ def meta_from_filenames_venoms(filelist,
 
     """
     run_regex = r"(?<=run|set)\d{1,}"
-    camera_regex =r"(?<=Ch)\d{1,}"
+    channel_regex =r"(?<=Ch)\d{1,}"
     date_regex = r"(?<=_)\d{8,}(?=_)"  
     channel_dict = {(1, 1): 1,
                     (1, 2): 2,
@@ -201,7 +202,7 @@ def meta_from_filenames_venoms(filelist,
         meta.append(pd.Series({'venom_type': file.stem.split('_')[0],
                                'run_number': re.findall(run_regex,
                                                         file.stem)[0],
-                               'camera_number': int(re.findall(camera_regex,
+                               'channel_number': int(re.findall(channel_regex,
                                                            file.stem)[0]),
                                'PC_number': int(file.parts[-3][-1]),
                                'date_YYYYMMDD': datetime.datetime.strptime(
@@ -215,14 +216,14 @@ def meta_from_filenames_venoms(filelist,
     meta.reset_index(drop=True, inplace=True)
     if extract_channels:
         meta['channel'] = pd.Series(zip(meta['PC_number'],
-                                        meta['camera_number'])).map(
+                                        meta['channel_number'])).map(
                                             channel_dict)
     else:
-        meta.rename(columns = {'camera_number': 'channel'})
+        meta.rename(columns = {'channel_number': 'camera'})
         
     meta.sort_values(by=['date_YYYYMMDD',
                         'run_number',
-                        'channel'],
+                        'camera'],
                      inplace=True,
                      ignore_index=True)
     meta.reset_index(drop=True,
