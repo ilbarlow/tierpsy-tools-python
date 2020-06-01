@@ -17,12 +17,12 @@ def paired_stats_tests(features,
                        control_group='DMSO'):
     """
     author @ibarlow
-    
+
     Function for doing pairwise statistical test across multiple features
-    and then posthoc correction for multiple comparisons. All data is 
+    and then posthoc correction for multiple comparisons. All data is
     treated as either normal or not normal, FUNCTION WOULD BE IMPROVED
     IF DISTRIBUTION TEST WAS INCLUDED TO SELECT APPROPRIATE STAT TEST
-    
+
     Returns two dataframes with uncorrected and corrected p-values for each
     feature
 
@@ -35,7 +35,7 @@ def paired_stats_tests(features,
     distributionType : TYPE
         The default is normal.
     threshold : TYPE, optional
-        critical values false discovery rate (Q), ie. the % of false positive 
+        critical values false discovery rate (Q), ie. the % of false positive
           that you are willing to accept; Default = 5% (0.05)
     control_group : string
         DESCRIPTION. The default in DMSO
@@ -43,34 +43,34 @@ def paired_stats_tests(features,
     Returns
     -------
     pVals : Dataframe
-        dataframe containing raw p values after the pairwise test and 
+        dataframe containing raw p values after the pairwise test and
         column y_class
     bhP_values : DataFrame
-        multilevel index dataframe containing only the pValues 
-        that are significant after controlling for false discovery using the 
+        multilevel index dataframe containing only the pValues
+        that are significant after controlling for false discovery using the
         benjamini hochberg procedure, which ranks the raw p values,
-        then calculates a threshold as (i/m)*Q,  where i=rank, m=total number 
+        then calculates a threshold as (i/m)*Q,  where i=rank, m=total number
         of samples, Q=false discovery rate; p values < (i/m)*Q are considered
-        significant. Uncorrected p-values are returned where the null 
+        significant. Uncorrected p-values are returned where the null
         hypothesis has been rejected. Contains column y_class
-        
+
     group_classes: list
         list of the classes used for the pairwise statistical tests
-    
 
-    """    
+
+    """
     if distributionType.lower() == 'normal':
         test = stats.ttest_ind
     else:
         test = stats.ranksums
-        
+
     print ('Control group: {}'.format(control_group))
-    
+
     featlist = list(features.columns)
     features['y_class'] = y_classes
     features_grouped = features.groupby('y_class')
     groups = list(set(y_classes))
-    
+
     pVals = []
     for item in groups:
         if control_group in item:
@@ -78,7 +78,7 @@ def paired_stats_tests(features,
         else:
             control = tuple(s if type(s)!=str else control_group for s in item)
             _vals = pd.Series(dtype = object)
-            for f in featlist:    
+            for f in featlist:
                 try:
                     _vals[f] = test(features_grouped.get_group(item)[f].values,
                                     features_grouped.get_group(control)[f].values,
@@ -89,7 +89,7 @@ def paired_stats_tests(features,
             pVals.append(_vals.to_frame().transpose())
     pVals = pd.concat(pVals)
     pVals.reset_index(drop=True, inplace=True)
-         
+
     # correct for multiple comparisons
     bhP_values = pd.DataFrame(columns = pVals.columns)
     for i,r in pVals.iterrows():
@@ -102,9 +102,11 @@ def paired_stats_tests(features,
         _corrArray['y_class'] = r['y_class']
         bhP_values = bhP_values.append(_corrArray,
                                        ignore_index=True)
-     
-    #make new column for number of significantly different
-    bhP_values['sumSig'] = bhP_values.notna().sum(axis=1)
+
+    # make new column for number of significantly different
+    # bhP_values['sumSig'] = bhP_values.notna().sum(axis=1)
     group_classes = list(bhP_values['y_class'])
-    
+    bhP_values.drop(columns='y_class',
+                    inplace=True)
+
     return pVals, bhP_values, group_classes
