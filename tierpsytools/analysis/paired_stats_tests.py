@@ -69,14 +69,15 @@ def paired_stats_tests(features,
     featlist = list(features.columns)
     features['y_class'] = y_classes
     features_grouped = features.groupby('y_class')
-    groups = list(set(y_classes))
+    groups = list(features_grouped.groups.keys())
 
     pVals = []
     for item in groups:
         if control_group in item:
             continue
         else:
-            control = tuple(s if type(s)!=str else control_group for s in item)
+            # control = tuple(s if type(s)!=str else control_group for s in item)
+            control = control_group
             _vals = pd.Series(dtype = object)
             for f in featlist:
                 try:
