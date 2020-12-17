@@ -70,7 +70,11 @@ def pairwise_stats_tests(features,
     featlist = list(features.columns)
     features['y_class'] = y_classes
     features_grouped = features.groupby('y_class')
+<<<<<<< HEAD:tierpsytools/analysis/pairwise_stats_tests.py
     groups = list(features_grouped.groups.keys())
+=======
+    groups = list(set(y_classes))
+>>>>>>> removed sum sigs:tierpsytools/analysis/paired_stats_tests.py
 
     pVals = []
     for item in groups:
