@@ -12,7 +12,7 @@ Created on Thu Apr 23 19:33:54 2020
 @author: em812
 """
 import numpy as np
-from tierpsytools.feature_processing.scaling_class import scalingClass
+from tierpsytools.preprocessing.scaling_class import scalingClass
 from tierpsytools.analysis.helper import _get_multi_sclassifscorers
 from joblib import Parallel, delayed
 import pdb
@@ -66,7 +66,7 @@ def cv_predict(
     pred = np.empty_like(y)
     probas = np.empty((X.shape[0], labels.shape[0]))
 
-    parallel = Parallel(n_jobs=-1, verbose=True)
+    parallel = Parallel(n_jobs=n_jobs, verbose=True)
     func = delayed(_one_fit)
 
     res = parallel(
@@ -94,9 +94,7 @@ def cv_predict_single(
     X = np.array(X)
     y = np.array(y)
 
-    if sample_weight is None:
-        sample_weight = np.ones(y.shape)
-    else:
+    if sample_weight is not None:
         sample_weight = np.array(sample_weight)
 
     pred = np.empty_like(y)
@@ -114,7 +112,10 @@ def cv_predict_single(
         X_test = scaler.transform(X[test_index])
 
         # Train classifier
-        estimator.fit(X_train, y[train_index], sample_weight[train_index])
+        if sample_weight is not None:
+            estimator.fit(X_train, y[train_index], sample_weight[train_index])
+        else:
+            estimator.fit(X_train, y[train_index])
         trained_estimators.append(estimator)
 
         # Predict
@@ -205,7 +206,7 @@ def get_fscore(
         return fscore
 
 def rearrange_confusion_matrix(cm, n_clusters):
-    from sklearn.cluster.bicluster import SpectralCoclustering
+    from sklearn.cluster import SpectralCoclustering
 
     clst = SpectralCoclustering(n_clusters=n_clusters).fit(cm)
 
@@ -224,7 +225,7 @@ def rearrange_confusion_matrix(cm, n_clusters):
 
 def plot_confusion_matrix(
         y_true, y_pred, classes=None, normalize=False, title=None, figsize=(8,8),
-        cmap=None, saveto=None, cluster=False, n_clusters=3
+        cmap=None, saveto=None, cluster=False, n_clusters=3, add_colorbar=False
         ):
     """
     This function prints and plots the confusion matrix.
@@ -234,6 +235,8 @@ def plot_confusion_matrix(
     from sklearn.metrics import confusion_matrix
     from sklearn.utils.multiclass import unique_labels
     from mpl_toolkits.axes_grid1 import make_axes_locatable
+    plt.rcParams['svg.fonttype'] = 'none'
+    plt.rcParams['font.sans-serif'] = 'Arial'
 
 #    if not title:
 #        if normalize:
@@ -269,12 +272,13 @@ def plot_confusion_matrix(
     fig, ax = plt.subplots(figsize=figsize)
     im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
 
-    # create an axes on the right side of ax. The width of cax will be 5%
-    # of ax and the padding between cax and ax will be fixed at 0.05 inch.
-    divider = make_axes_locatable(ax)
-    cax = divider.append_axes("right", size="5%", pad=0.05)
+    if add_colorbar:
+        # create an axes on the right side of ax. The width of cax will be 5%
+        # of ax and the padding between cax and ax will be fixed at 0.05 inch.
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        ax.figure.colorbar(im, cax=cax)
 
-    ax.figure.colorbar(im, cax=cax)
     # We want to show all ticks...
     ax.set(xticks=np.arange(cm.shape[1]),
            yticks=np.arange(cm.shape[0]),
