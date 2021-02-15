@@ -146,7 +146,11 @@ def update_metadata(aux_dir, matched_long, saveto=None, del_if_exists=False):
         DESCRIPTION.
 
     """
+<<<<<<< Updated upstream
     metadata_fname = list(Path(aux_dir).rglob('metadata.csv'))
+=======
+    metadata_fname = list(aux_dir.rglob('metadata.csv'))
+>>>>>>> Stashed changes
 
     if len(metadata_fname)>1:
         warnings.warn('More than one metadata file in this directory: \n' +

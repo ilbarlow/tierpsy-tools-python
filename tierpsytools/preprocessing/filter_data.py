@@ -150,6 +150,10 @@ def filter_nan_inf(feat, threshold, axis):
 
     return feat
 
+def compare_nan_array(func, a, thresh):
+    out = ~np.isnan(a)
+    out[out] = func(a[out] , thresh)
+    return out
 
 def cap_feat_values(feat, cutoff=1e15, remove_all_nan=True):
     """
@@ -172,7 +176,7 @@ def cap_feat_values(feat, cutoff=1e15, remove_all_nan=True):
 
     drop_cols = []
     for col in feat.columns:
-        if np.all(feat[col].values>cutoff):
+        if np.all(compare_nan_array(np.greater, feat[col], cutoff)):
             drop_cols.append(col)
         else:
             maxvalid = feat.loc[feat[col]<1e15,col].max()

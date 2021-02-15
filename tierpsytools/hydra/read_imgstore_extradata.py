@@ -16,6 +16,10 @@ import seaborn as sns
 from pathlib import Path
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+
+import sys
+sys.path.insert(0,'/Users/ibarlow/tierpsy-tools-python')
+
 from tierpsytools.hydra.hydra_filenames_helper import find_imgstore_videos
 
 warnings.filterwarnings('ignore', message='calling yaml.load()*')
