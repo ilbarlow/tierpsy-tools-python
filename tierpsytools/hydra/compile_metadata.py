@@ -931,7 +931,7 @@ def concatenate_days_metadata(
     all_meta = pd.concat(all_meta,axis=0)
     all_meta.to_csv(saveto,index=False)
 
-    return
+    return all_meta
 
 #%%
 if __name__ == '__main__':
