@@ -59,11 +59,7 @@ def check_time_differences(df, tol=3):
     ind_dodgy = []
     if diff1.max() > diff1.mean() + tol/2:
         ind_dodgy.extend(
-<<<<<<< Updated upstream
             (diff1 > diff1.mean() + tol/2).to_numpy().nonzero()[0]) #nonzeros
-=======
-            (diff1 > diff1.mean() + tol/2).to_numpy().nonzero()[0])
->>>>>>> Stashed changes
     if diff1.min() < diff1.mean() - tol/2:
         ind_dodgy.extend(
             (diff1 < diff1.mean() - tol/2).to_numpy().nonzero()[0])
